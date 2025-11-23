@@ -69,6 +69,12 @@ class ForecastRequest(BaseModel):
         False,
         description="If true, include Prophet components (trend, weekly, yearly, etc.) in the response.",
     )
+ interval_width: float = Field(
+        0.8,
+        ge=0.0,
+        le=1.0,
+        description="Uncertainty interval width for Prophet forecasts (0 to 1).",
+    )
 
     @validator("freq")
     def validate_freq(cls, value: str) -> str:
