@@ -105,7 +105,7 @@ class ForecastRequest(BaseModel):
         if growth == "logistic" and cap is None:
             raise ValueError("cap is required when growth='logistic'.")
 
-              # floor ถ้ามี ต้องน้อยกว่า cap
+        # floor ถ้ามี ต้องน้อยกว่า cap
         if growth == "logistic" and floor is not None and cap is not None:
             if floor >= cap:
                 raise ValueError("floor must be less than cap when using logistic growth.")
@@ -191,7 +191,7 @@ def forecast(req: ForecastRequest):
             detail="All 'ds' values must be valid datetimes.",
         )
 
-      if not df["ds"].is_unique:
+  if not df["ds"].is_unique:
         raise HTTPException(
             status_code=400,
             detail="All 'ds' values must be unique timestamps.",
