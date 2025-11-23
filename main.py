@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Dict, List, Optional
+import copy
 import hashlib
 import json
 
@@ -179,7 +180,8 @@ def forecast(req: ForecastRequest):
     # ใช้ cache ถ้ามี request เดิมเป๊ะ ๆ
     cache_key = _make_cache_key(req)
     if cache_key in _FORECAST_CACHE:
-        return _FORECAST_CACHE[cache_key]
+        # return a copy so callers cannot mutate the cached value
+        return copy.deepcopy(_FORECAST_CACHE[cache_key])
 
     if not req.data:
         raise HTTPException(
@@ -341,7 +343,7 @@ def forecast(req: ForecastRequest):
                 "records"
             )
 
-    # เก็บ cache
-    _FORECAST_CACHE[cache_key] = result
-
+    # เก็บ cache (ใช้ deepcopy เพื่อไม่ให้ caller เปลี่ยนค่าใน cache ได้)
+    _FORECAST_CACHE[cache_key] = copy.deepcopy(result)
+    
     return result
