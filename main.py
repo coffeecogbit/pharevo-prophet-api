@@ -24,7 +24,7 @@ class DataPoint(BaseModel):
         allow_inf_nan=False,
     )
 
-  class Config:
+    class Config:
         extra = "forbid"
 
 
@@ -80,7 +80,7 @@ class ForecastRequest(BaseModel):
         description="Uncertainty interval width for Prophet forecasts (0 to 1).",
     )
 
-     class Config:
+    class Config:
         extra = "forbid"
 
     @validator("freq")
