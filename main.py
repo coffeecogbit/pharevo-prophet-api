@@ -85,7 +85,7 @@ class ForecastRequest(BaseModel):
             raise ValueError("growth must be 'linear' or 'logistic'.")
         return value
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_logistic_and_regressors(cls, values):
         growth = values.get("growth")
         cap = values.get("cap")
