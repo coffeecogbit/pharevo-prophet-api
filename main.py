@@ -102,23 +102,23 @@ class ForecastRequest(BaseModel):
             if floor > cap:
                 raise ValueError("floor cannot be greater than cap when using logistic growth.")
 
-     # เช็กความยาว regressors ให้เท่ากับ data
-if regressors:
-    n = len(data)
-    for name, series in regressors.items():
+# เช็กความยาว regressors ให้เท่ากับ data
+        if regressors:
+            n = len(data)
+            for name, series in regressors.items():
 
-        # ความยาวต้องตรงกับ data
-        if len(series) != n:
-            raise ValueError(
-                f"Regressor '{name}' must have the same length as data ({n})."
-            )
+                # ความยาวต้องตรงกับ data
+                if len(series) != n:
+                    raise ValueError(
+                        f"Regressor '{name}' must have the same length as data ({n})."
+                    )
 
-        # ต้องเป็นตัวเลข finite เท่านั้น
-        series_arr = np.array(series, dtype=float)
-        if not np.all(np.isfinite(series_arr)):
-            raise ValueError(
-                f"Regressor '{name}' contains non-finite values (NaN or inf)."
-            )
+                # ต้องเป็นตัวเลข finite เท่านั้น
+                series_arr = np.array(series, dtype=float)
+                if not np.all(np.isfinite(series_arr)):
+                    raise ValueError(
+                        f"Regressor '{name}' contains non-finite values (NaN or inf)."
+                    )
 
         return values
 
