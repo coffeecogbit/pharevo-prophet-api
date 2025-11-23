@@ -181,6 +181,19 @@ def forecast(req: ForecastRequest):
             detail="All 'y' values must be finite numbers.",
         )
 
+    # Logistic growth ต้องการให้ค่า y อยู่ระหว่าง floor และ cap
+    if req.growth == "logistic":
+        if (df["y"] >= req.cap).any():
+            raise HTTPException(
+                status_code=400,
+                detail="All 'y' values must be less than cap when using logistic growth.",
+            )
+
+        if req.floor is not None and (df["y"] <= req.floor).any():
+            raise HTTPException(
+                status_code=400,
+                detail="All 'y' values must be greater than floor when using logistic growth.",
+            )
     if df.shape[0] < 2:
         raise HTTPException(
             status_code=400,
