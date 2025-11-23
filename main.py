@@ -69,7 +69,7 @@ class ForecastRequest(BaseModel):
         False,
         description="If true, include Prophet components (trend, weekly, yearly, etc.) in the response.",
     )
- interval_width: float = Field(
+    interval_width: float = Field(
         0.8,
         ge=0.0,
         le=1.0,
@@ -165,6 +165,7 @@ def _make_cache_key(req: ForecastRequest) -> str:
         "floor": req.floor,
         "regressors": req.regressors,
         "include_components": req.include_components,
+        "interval_width": req.interval_width,
     }
     text = json.dumps(payload, sort_keys=True)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -259,6 +260,7 @@ def forecast(req: ForecastRequest):
         yearly_seasonality=req.yearly_seasonality,
         weekly_seasonality=req.weekly_seasonality,
         daily_seasonality=req.daily_seasonality,
+        interval_width=req.interval_width,
     )
 
     # ลงทะเบียน regressors
@@ -314,6 +316,7 @@ def forecast(req: ForecastRequest):
             "cap": req.cap,
             "floor": req.floor,
             "regressors": list(regressors.keys()),
+            "interval_width": req.interval_width,
         },
     }
 
