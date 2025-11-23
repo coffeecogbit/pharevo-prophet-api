@@ -24,6 +24,9 @@ class DataPoint(BaseModel):
         allow_inf_nan=False,
     )
 
+  class Config:
+        extra = "forbid"
+
 
 class ForecastRequest(BaseModel):
     data: List[DataPoint]
@@ -76,6 +79,9 @@ class ForecastRequest(BaseModel):
         le=1.0,
         description="Uncertainty interval width for Prophet forecasts (0 to 1).",
     )
+
+     class Config:
+        extra = "forbid"
 
     @validator("freq")
     def validate_freq(cls, value: str) -> str:
