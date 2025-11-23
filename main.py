@@ -191,6 +191,12 @@ def forecast(req: ForecastRequest):
             detail="All 'ds' values must be valid datetimes.",
         )
 
+   if not df["ds"].is_unique:
+        raise HTTPException(
+            status_code=400,
+            detail="All 'ds' values must be unique timestamps.",
+        )
+
     if df["y"].isna().any():
         raise HTTPException(
             status_code=400,
