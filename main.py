@@ -102,10 +102,15 @@ class ForecastRequest(BaseModel):
             if floor > cap:
                 raise ValueError("floor cannot be greater than cap when using logistic growth.")
 
-# เช็กความยาว regressors ให้เท่ากับ data
+        # เช็กความยาว regressors ให้เท่ากับ data
         if regressors:
             n = len(data)
+            reserved = {"ds", "y", "cap", "floor"}
             for name, series in regressors.items():
+                if name in reserved:
+                    raise ValueError(
+                        f"Regressor '{name}' is reserved and cannot be used as an additional regressor."
+                    )
 
                 # ความยาวต้องตรงกับ data
                 if len(series) != n:
