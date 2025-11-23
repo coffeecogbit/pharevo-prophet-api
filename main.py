@@ -85,6 +85,14 @@ class ForecastRequest(BaseModel):
             raise ValueError("growth must be 'linear' or 'logistic'.")
         return value
 
+    @validator("cap", "floor")
+    def validate_bounds(cls, value: Optional[float]) -> Optional[float]:
+        if value is None:
+            return value
+        if not np.isfinite(value):
+            raise ValueError("cap and floor must be finite numbers when provided.")
+        return value
+        
     @root_validator(skip_on_failure=True)
     def validate_logistic_and_regressors(cls, values):
         growth = values.get("growth")
@@ -97,10 +105,10 @@ class ForecastRequest(BaseModel):
         if growth == "logistic" and cap is None:
             raise ValueError("cap is required when growth='logistic'.")
 
-        # floor ถ้ามี ต้องน้อยกว่าหรือเท่ากับ cap
+       # floor ถ้ามี ต้องน้อยกว่า cap
         if growth == "logistic" and floor is not None and cap is not None:
-            if floor > cap:
-                raise ValueError("floor cannot be greater than cap when using logistic growth.")
+            if floor >= cap:
+                raise ValueError("floor must be less than cap when using logistic growth.")
 
         # เช็กความยาว regressors ให้เท่ากับ data
         if regressors:
