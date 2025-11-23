@@ -3,7 +3,7 @@ from typing import List
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from prophet import Prophet
 
 app = FastAPI()
@@ -11,13 +11,23 @@ app = FastAPI()
 
 class DataPoint(BaseModel):
     ds: datetime = Field(..., description="Timestamp of the observation.")
-    y: float = Field(..., description="Observed value at the timestamp.")
+    y: float = Field(
+        ..., description="Observed value at the timestamp.", allow_inf_nan=False
+    )
 
 
 class ForecastRequest(BaseModel):
     data: List[DataPoint]
     periods: int = Field(..., gt=0, description="Number of future periods to forecast.")
     freq: str = Field("D", description="Pandas frequency string for the forecast horizon.")
+
+    @validator("freq")
+    def validate_freq(cls, value: str) -> str:
+        try:
+            pd.tseries.frequencies.to_offset(value)
+        except (ValueError, TypeError) as exc:  # pragma: no cover - defensive
+            raise ValueError("Invalid frequency string.") from exc
+        return value
 
 
 @app.post("/forecast")
@@ -33,6 +43,12 @@ def forecast(req: ForecastRequest):
 
     if df["y"].isna().any():
         raise HTTPException(status_code=400, detail="All 'y' values must be present and numeric.")
+
+    if df.shape[0] < 2:
+        raise HTTPException(status_code=400, detail="At least two observations are required to build a forecast.")
+
+    if df["ds"].nunique() < 2:
+        raise HTTPException(status_code=400, detail="Observations must span at least two distinct timestamps.")
 
     df = df.sort_values("ds").reset_index(drop=True)
 
