@@ -2,3 +2,4 @@ fastapi
 uvicorn
 prophet
 pandas
+numpy

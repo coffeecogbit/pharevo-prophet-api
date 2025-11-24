@@ -18,14 +18,17 @@ app = FastAPI()
 # -----------------------------
 class DataPoint(BaseModel):
     ds: datetime = Field(..., description="Timestamp of the observation.")
-    y: float = Field(
-        ...,
-        description="Observed value at the timestamp.",
-        allow_inf_nan=False,
-    )
+    y: float = Field(..., description="Observed value at the timestamp.")
 
     class Config:
         extra = "forbid"
+
+    @validator("y")
+    def validate_y(cls, value: float) -> float:
+        # ยืนยันว่าเป็นตัวเลข finite (ไม่ใช่ NaN/inf)
+        if not np.isfinite(value):
+            raise ValueError("y must be a finite number (not NaN or infinite).")
+        return value
 
 
 class ForecastRequest(BaseModel):
@@ -36,15 +39,9 @@ class ForecastRequest(BaseModel):
     freq: str = Field("D", description="Pandas frequency string for the forecast horizon.")
 
     # Seasonality options
-    yearly_seasonality: bool = Field(
-        True, description="Enable yearly seasonality."
-    )
-    weekly_seasonality: bool = Field(
-        True, description="Enable weekly seasonality."
-    )
-    daily_seasonality: bool = Field(
-        False, description="Enable daily seasonality."
-    )
+    yearly_seasonality: bool = Field(True, description="Enable yearly seasonality.")
+    weekly_seasonality: bool = Field(True, description="Enable weekly seasonality.")
+    daily_seasonality: bool = Field(False, description="Enable daily seasonality.")
 
     # Growth model
     growth: str = Field(
@@ -154,7 +151,6 @@ class ForecastRequest(BaseModel):
 # -----------------------------
 _FORECAST_CACHE: Dict[str, Dict] = {}
 
-
 def _make_cache_key(req: ForecastRequest) -> str:
     """สร้าง key สำหรับ cache จากเนื้อหา request ทั้งหมด"""
     payload = {
@@ -176,7 +172,6 @@ def _make_cache_key(req: ForecastRequest) -> str:
     }
     text = json.dumps(payload, sort_keys=True)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
 
 # -----------------------------
 # Main forecasting endpoint
@@ -218,7 +213,7 @@ def forecast(req: ForecastRequest):
             detail="All 'y' values must be present and numeric.",
         )
 
-    if (~np.isfinite(df["y"])).any():
+    if (~np.isfinite(df["y"])) .any():
         raise HTTPException(
             status_code=400,
             detail="All 'y' values must be finite numbers.",
